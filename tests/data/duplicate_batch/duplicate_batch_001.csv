@@ -1,0 +1,9 @@
+batch_no,order_no,prescription_no,visit_no,patient_ref,dept_code,dept_name,prescriber_id,prescriber_name,drug_code,drug_name,spec,dosage_form,dosage_text,dosage_value,dosage_unit,route,freq,quantity,rx_type,drug_category,days_qty,extend_reason,skin_test_result,clinical_diag,age_value,age_unit,event_time
+DUP-BATCH-001,ORD-D01,RX-DUP-001,VISIT-D01,PAT-D01,D-01,心血管内科门诊,PR-D01,医师甲,DC-AMLO,氨氯地平片,5mg,片剂,5mg qd,5,mg,po,qd,7,门急诊一般,普通药品,1,,,高血压,65,岁,2026-10-28 09:00:00
+DUP-BATCH-001,ORD-D02,RX-DUP-002,VISIT-D01,PAT-D01,D-01,心血管内科门诊,PR-D01,医师甲,DC-AMLO,氨氯地平片,5mg,片剂,5mg qd,5,mg,po,qd,7,门急诊一般,普通药品,1,,,高血压,65,岁,2026-10-28 10:00:00
+DUP-BATCH-001,ORD-D03,RX-DUP-003,VISIT-D01,PAT-D01,D-01,心血管内科门诊,PR-D01,医师甲,DC-NIFED,硝苯地平片,10mg,片剂,10mg qd,10,mg,po,qd,7,门急诊一般,普通药品,1,,,高血压,65,岁,2026-10-28 11:00:00
+DUP-BATCH-001,ORD-D04,RX-DUP-004,VISIT-D01,PAT-D01,D-01,心血管内科门诊,PR-D01,医师甲,DC-AMLO,氨氯地平片,5mg,片剂,5mg qd,5,mg,po,qd,7,门急诊一般,普通药品,1,,,高血压,65,岁,2026-10-29 09:00:00
+DUP-BATCH-001,ORD-S01,RX-SUP-001,VISIT-S01,PAT-S01,D-02,疼痛科门诊,PR-S09,医师乙,DC-MA-INJ,盐酸吗啡注射液,10mg,注射剂,10mg im,10,mg,im,prn,1,门急诊一般,麻醉药品注射剂,3,,,癌性疼痛,58,岁,2026-10-28 08:00:00
+DUP-BATCH-001,ORD-S02,RX-SUP-002,VISIT-S02,PAT-S02,D-02,疼痛科门诊,PR-S09,医师乙,DC-MA-INJ,盐酸吗啡注射液,10mg,注射剂,10mg im,10,mg,im,prn,1,门急诊一般,麻醉药品注射剂,3,,,癌性疼痛,61,岁,2026-10-28 08:10:00
+DUP-BATCH-001,ORD-S03,RX-SUP-003,VISIT-S03,PAT-S03,D-02,疼痛科门诊,PR-S09,医师乙,DC-MA-INJ,盐酸吗啡注射液,10mg,注射剂,10mg im,10,mg,im,prn,1,门急诊一般,麻醉药品注射剂,3,,,癌性疼痛,54,岁,2026-10-28 08:20:00
+DUP-BATCH-001,ORD-S04,RX-SUP-004,VISIT-S04,PAT-S04,D-02,疼痛科门诊,PR-S09,医师乙,DC-MA-INJ,盐酸吗啡注射液,10mg,注射剂,10mg im,10,mg,im,prn,1,门急诊一般,麻醉药品注射剂,3,,,癌性疼痛,47,岁,2026-10-28 08:30:00

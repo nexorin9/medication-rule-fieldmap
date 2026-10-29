@@ -1,0 +1,100 @@
+# 规范性审核规则行
+#
+# 依据：《处方审核规则体系》§1 规范性审核——「前记（机构、患者身份、科别、临床诊断、日期）、
+# 正文（药品名称、剂型、数量、用法用量）、后记（签章）完整清晰；用法用量表述清楚，
+# 不得用『遵医嘱』『自用』含糊字句」。
+# 词表只取该条文明列的字句，药事审核岗可在规则行内增补并带依据，不自造词表。
+# 规范性缺项类规则的 missing_conclusion 为「违规」——缺前记本身就是不合格处方；
+# 其余规则默认「不可判定」（缺字段 → 点名字段 → 进字段对照台账）。
+
+rule_id: RX-NORM-FRONT-DIAG
+layer: 规范性
+basis: 处方审核规则体系 §1 规范性审核（前记：机构、患者身份、科别、临床诊断、日期完整清晰）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when: {}
+required_fields: [clinical_diag]
+expression: "clinical_diag == ''"
+severity: 不规范处方
+missing_conclusion: 违规
+note: 前记缺临床诊断即不合格处方；后记签章缺项同族规则由规范性质检引擎承担。
+      表达式口径：expression 为真 = 命中违规条件（与 §3 量限规则同一口径），
+      临床诊断为空即违规；空值与缺失在入站侧同义，实际由 missing_conclusion 分支先命中。
+      判定内核 5/10 起本规则走规范性质检路径（engine/normativity.py）：
+      栏位在但内容为空 → 违规（退回医师补写）；整列未落地 → 不可判定（接口缺口）。
+---
+rule_id: RX-NORM-FRONT-HEADER
+layer: 规范性
+basis: 处方审核规则体系 §1 规范性审核（前记：机构、患者身份、科别、临床诊断、日期完整清晰）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when: {}
+required_fields: [dept_name, patient_ref, dept_code, event_time]
+expression: "dept_name == '' or patient_ref == '' or dept_code == '' or event_time == ''"
+severity: 不规范处方
+missing_conclusion: 违规
+note: 前记其余四项（机构 / 患者身份 / 科别 / 日期）——与 RX-NORM-FRONT-DIAG 分开成条，
+      归因文本逐项点名缺哪一项。表达式口径：expression 为真 = 命中违规条件，
+      任一项为空即违规（表达式只表达「命中违规条件」，实际判定由规范性质检路径
+      逐栏位核对：栏位在但内容为空 → 违规；整列未落地 → 不可判定并点名字段）。
+---
+rule_id: RX-NORM-BACK-SIGNATURE
+layer: 规范性
+basis: 处方审核规则体系 §1 规范性审核（后记：签章完整清晰）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when: {}
+required_fields: [prescriber_id]
+expression: "prescriber_id == ''"
+severity: 不规范处方
+missing_conclusion: 违规
+note: 后记签章缺项，与前记缺项**单独成条**（两种处置不同：前记退回医师补写，
+      后记退回补签）。本轮只判签章栏位有没有落地，不判签章真伪、也不判签章人
+      与开方医师是否一致——那属电子签名与身份核验，是 HIS / CA 侧职责；
+      药师签章属审方复核回写侧字段，不在医嘱落地文件口径内。
+---
+rule_id: RX-NORM-USAGE-VAGUE
+layer: 规范性
+basis: 处方审核规则体系 §1 规范性审核（用法用量表述须清楚，不得用「遵医嘱」「自用」含糊字句）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when: {}
+required_fields: [dosage_text]
+expression: "dosage_text != ''"
+severity: 不规范处方
+forbidden_terms: [遵医嘱, 自用]
+note: 触发条件为用法用量原文命中含糊字句词表；官方案例 rx-003 应拦截。
+      带 forbidden_terms 的规则形状：expression 为真表示本规则适用（前提满足），
+      再到 required_fields 声明的字段里查词表，命中即违规；词表命中无法用标量比较表达，
+      故单列为规则行配置项。
+      词表口径：§1 明列「遵医嘱」「自用」两个字句，本规则词表已覆盖（漏掉基线字句
+      属配置错误，载入期即拒）。药事审核岗可在本行增补本院口径的字句，须同时改
+      版本号与 basis —— 删词表属规则改版，不该由配置缺口静默生效。
+---
+rule_id: RX-NORM-CHILD-AGE
+layer: 规范性
+basis: 处方审核规则体系 §1 规范性审核（儿童处方写实际年龄，婴幼儿写日/月龄或体重）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  dept_name:
+    contains: 儿科
+required_fields: [age_value, age_unit]
+expression: "age_value == '' or age_unit == ''"
+severity: 不规范处方
+missing_conclusion: 违规
+note: 儿童实际年龄口径（判定内核 6/10，engine/children_age.py）。§1 未给出「儿童」
+      的年龄界线，本轮不自创数字：儿童人群按科室口径圈定（applies_when 圈儿科
+      开单科室，药事审核岗按本院科室命名改这一行即可；若 HIS 落地文件后续补上
+      患者主数据年龄，改适用条件按年龄圈定即可，分支表不用动）。
+      分支：年龄两栏都没填 → 违规（儿童处方未写实际年龄，退回医师补写）；
+      数值有而单位缺 → 不可判定（口径不可辨，点名 age_unit 进字段对照台账）；
+      单位是岁且数值不足 1 周岁（含 0 岁）→ 违规（婴幼儿写成周岁口径）；
+      单位是岁且 ≥1 / 月 / 日 / 周 → 合规。
+      0 岁是**有值**不是缺失——本规则的 expression 只声明「年龄缺失」这一支，
+      实际判定按分支表执行（标量表达式表达不了「0 岁」这类边界）。

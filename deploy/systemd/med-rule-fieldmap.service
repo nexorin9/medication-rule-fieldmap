@@ -1,0 +1,69 @@
+# 合理用药审方字段对照系统 · 常驻守护进程 systemd 单元
+#
+# 药学部内网单机部署。安装位置与路径按院内实际调整后，用
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now med-rule-fieldmap
+# 启动。
+#
+# 【凭据纪律】本单元**不含任何密钥**。HIS_BASE_URL / HIS_API_TOKEN /
+# WECOM_WEBHOOK_URL 等凭据位一律放在仓外的 EnvironmentFile
+# （默认 /etc/medication-rule-fieldmap/med-rule-fieldmap.env，权限 0600、
+# 属主 mrfm），由 `EnvironmentFile=` 引入。仓库里的 .env.example 只有空占位。
+
+[Unit]
+Description=合理用药审方字段对照系统 · 审方三态判定守护进程
+Documentation=file:/opt/medication-rule-fieldmap/docs/architecture.md
+Documentation=file:/opt/medication-rule-fieldmap/docs/cli.md
+After=network-online.target
+Wants=network-online.target
+# 落地目录在同一个文件系统上时，确保挂载先于服务起来
+RequiresMountsFor=/var/lib/medication-rule-fieldmap
+
+[Service]
+Type=simple
+User=mrfm
+Group=mrfm
+WorkingDirectory=/opt/medication-rule-fieldmap
+
+# 凭据位（仓外 0600 文件；缺项会在启动时被显式拒绝，不会静默跳过）
+EnvironmentFile=-/etc/medication-rule-fieldmap/med-rule-fieldmap.env
+# 非交互环境：禁止缓冲，便于 journalctl 实时看到心跳与批次摘要
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONDONTWRITEBYTECODE=1
+
+ExecStart=/opt/medication-rule-fieldmap/.venv/bin/python -m med_rule_fieldmap.daemon \
+  --inbox /var/lib/medication-rule-fieldmap/inbox \
+  --rules /opt/medication-rule-fieldmap/rules \
+  --out /var/lib/medication-rule-fieldmap/out \
+  --state-db /var/lib/medication-rule-fieldmap/state/mrfm.sqlite3 \
+  --heartbeat-sec 30 \
+  --log-level INFO
+
+# 优雅退出：收到 SIGTERM 后完成当前批次再退，不留半批状态
+KillSignal=SIGTERM
+TimeoutStopSec=120
+Restart=on-failure
+RestartSec=10
+# 崩溃反复重启时放弃，别把刷屏当成告警
+StartLimitBurst=5
+StartLimitIntervalSec=300
+
+# ---- 最小权限 ----
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/var/lib/medication-rule-fieldmap
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+# 日志走 journald（守护进程本身已按「批次摘要 / 逐行判定 / 审计与心跳」三层
+# 视觉层级打印，这里不再另开日志文件）
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=med-rule-fieldmap
+
+[Install]
+WantedBy=multi-user.target

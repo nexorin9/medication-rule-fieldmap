@@ -1,0 +1,61 @@
+# ---- 凭据与本地配置（绝不入库）----
+.env
+.env.local
+*.pem
+*.key
+
+# ---- 虚拟环境 ----
+venv/
+.venv/
+env/
+ENV/
+
+# ---- 依赖与构建产物 ----
+node_modules/
+target/
+dist/
+build/
+coverage/
+.next/
+.nuxt/
+*.egg-info/
+*.egg
+
+# ---- 运行时数据（生成的台账、状态库、事件落地目录）----
+data/
+!tests/data/
+!tests/data/**
+out/
+state/
+inbox/
+*.sqlite3
+*.sqlite3-wal
+*.sqlite3-shm
+*.db
+
+# ---- 日志与临时文件 ----
+logs/
+*.log
+tmp/
+temp/
+.cache/
+*.tmp
+*.temp
+
+# ---- Python 缓存 ----
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# ---- Round 元数据（不属于产品）----
+score.json
+
+# ---- 编辑器 ----
+.idea/
+.vscode/
+*.swp
+.DS_Store

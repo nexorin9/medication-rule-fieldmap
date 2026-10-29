@@ -1,0 +1,116 @@
+# 适宜性审核规则行
+#
+# 依据：《处方审核规则体系》§1 适宜性审核七项——第 1 项「规定必须做皮试的药品，是否注明
+# 过敏试验及结果判定」、第 3 项「剂量、用法的正确性」、第 5 项「是否有重复给药现象」，
+# 以及 §3 尾段「超常处方 3 次以上且无正当理由：警告并限制处方权」。
+# 注意：「必须做皮试的药品清单」属药品说明书数据（厂商资产），正式环境应由药事审核岗
+# 维护药品目录接入；本样例只按官方案例覆盖青霉素类注射剂，不凭规则行自造药品知识。
+
+rule_id: RX-APPR-SKIN-TEST-UNSPECIFIED
+layer: 适宜性
+basis: 处方审核规则体系 §1 适宜性审核第 1 项（规定必须做皮试的药品，是否注明过敏试验及结果判定）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  drug_name:
+    contains: 青霉素
+required_fields: [skin_test_result]
+expression: "skin_test_result == '未注明'"
+severity: 不合理用药
+note: 皮试结果为「未注明」→ 违规；结果为「阴性」→ 合规；字段为空 → 不可判定（空值 ≠ 显式否）。
+      官方案例 rx-004 应拦截。
+---
+rule_id: RX-APPR-SKIN-TEST-POSITIVE
+layer: 适宜性
+basis: 处方审核规则体系 §1 适宜性审核第 1 项与第 7 项（过敏试验结果阳性仍予开具，属其他用药不适宜）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  drug_name:
+    contains: 青霉素
+  skin_test_result: 阳性
+required_fields: [skin_test_result]
+expression: "skin_test_result == '阳性'"
+severity: 不合理用药
+note: 过敏试验结果为「阳性」仍予开具 → 违规（适宜性审核第 7 项：其他用药不适宜情况）。
+      适用条件里带上 skin_test_result = 阳性：结果为「未注明」的处方由上一条规则管，
+      不在本条上重复出一条违规行（受限表达式的显式否定语义对任何正向条件都判违规，
+      靠适用条件把两条规则的适用范围分开）。
+      这条结论写在规则行里而不是代码里：引擎只按受限表达式求值，药事审核岗可增补。
+---
+rule_id: RX-APPR-DOSE-NONPOSITIVE
+layer: 适宜性
+basis: 处方审核规则体系 §1 适宜性审核第 3 项（剂量、用法的正确性）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when: {}
+required_fields: [dosage_value]
+expression: "dosage_value <= 0"
+severity: 用药错误
+note: 剂量值非正属用药错误；剂量字段缺失 → 不可判定并点名 dosage_value。
+---
+rule_id: RX-APPR-DUPLICATE-ADMINISTRATION
+layer: 适宜性
+basis: 处方审核规则体系 §1 适宜性审核第 5 项（是否有重复给药现象）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when: {}
+required_fields: [visit_no, drug_code, event_time]
+expression: "visit_no != '' and drug_code != '' and event_time != ''"
+severity: 不合理用药
+note: 重复给药（判定内核 7/10，engine/duplicate.py）——**跨行判定**：判定键是
+      「同一就诊 visit_no · 同一药品 drug_code · 同一日 event_time 的日期部分」，
+      三样一样才算重复；同日不同药、跨日都不算。
+      expression 声明的是**判定前提所依赖的字段**（键字段齐备才进入跨行判定），
+      载入期校验要求三个键字段都被显式引用——跨行聚合口径用行内标量表达式表达不了，
+      口径由 engine/duplicate.py 给，规则行负责声明依赖，对不上即载入期拒。
+      分支：键字段任一为空 → 不可判定并点名该字段（接口缺口，进字段补齐顺序表）；
+      事件时间读不出日期部分 → 不可判定并点名 event_time（口径不可比）；
+      同键组只有本张 → 合规；组内首张 → 合规；组内第 2 张起 → 违规（重复给药），
+      归因文本点名同组更早的处方号。官方案例 rx-005 应拦截。
+---
+rule_id: RX-APPR-SUPERNORMAL-PRESCRIBING-RIGHT
+layer: 适宜性
+basis: 处方审核规则体系 §3 尾段（超常处方 3 次以上且无正当理由：警告并限制处方权）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when: {}
+required_fields: [prescriber_id, extend_reason]
+expression: "prescriber_id != ''"
+severity: 超常处方
+note: 超常处方（判定内核 7/10，engine/supernormal.py）——**跨行计数**：同一开方
+      医师 prescriber_id 在本批内「超 §3 量限且未注明正当理由」的处方张数，
+      按开立先后累计；累计次数超过 3 次（第 4 次起）→ 提示并标记应限制处方权。
+      正当理由字段 = extend_reason（与 §3 精二「延长须注明理由」同源）：整列未落地
+      → 不可判定并点名；栏位在但为空或写「未注明」→ 无正当理由；写出理由 → 予以放行，
+      不计入无理由次数。expression 声明判定前提依赖的分组键字段，载入期校验其被引用。
+      **只出提示，不自动限权**：限制处方权属药事委员会的处置动作，系统只标记不改权限。
+      官方案例 rx-009（医师超常 4 次且无正当理由）应拦截。
+---
+rule_id: RX-APPR-INDICATION-MATCH
+layer: 适宜性
+basis: 处方审核规则体系 §1 适宜性审核第 2 项（处方用药与临床诊断的相符性）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  drug_name:
+    contains: 硝酸甘油
+required_fields: [drug_name, clinical_diag]
+expression: "drug_name != '' and clinical_diag != ''"
+severity: 不合理用药
+note: 诊断相符性（判定内核 · engine/indication.py）。§1 适宜性审核第 2 项「处方用药
+      与临床诊断的相符性」——**本轮不做实质判定**：判相符性需要药品说明书里的适应症，
+      属厂商资产（规则体系 §4 审核依据来源、§5 末段「严禁模型凭记忆生成」），本轮不接。
+      本规则只做**字段完备性暴露**：依赖字段（药品名 / 临床诊断）缺任一项 → 不可判定
+      并点名该字段，进字段补齐顺序表（信息科可排期补接口字段）；两个字段都齐 →
+      仍落不可判定，转药师人工复核（知识库缺口，补接口字段也没用）。
+      **不落「合规」**：字段齐备就判合规等于替药师宣布「这药跟这个诊断相符」，
+      而这个判断本轮根本没做过（规则体系 §4：系统不能审核的部分必须人工审核）。
+      适用条件只圈定样例覆盖的药品（官方案例 rx-008 的硝酸甘油），正式环境由
+      药事审核岗按本院药品目录扩写。

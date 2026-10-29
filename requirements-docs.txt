@@ -1,0 +1,5 @@
+# 文档工具依赖（**不进产品运行时**）
+#
+# 只给 scripts/capture_screenshots.py 用：它把真实终端会话与真实产物
+# 渲染成 docs/screenshots/ 下的 PNG。产品的运行与部署都不需要这些包。
+Pillow>=10.0

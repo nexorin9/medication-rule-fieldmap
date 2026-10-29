@@ -1,0 +1,77 @@
+# 合理用药审方字段对照系统 · 药学部内网单机部署
+#
+# 用法（仓库根目录执行）：
+#   cp .env.example deploy/.env      # 按院内实际填写；本文件不含任何真实密钥
+#   docker compose -f deploy/docker-compose.yml up -d
+#   docker compose -f deploy/docker-compose.yml logs -f med-rule-fieldmap
+#
+# 【凭据纪律】env_file 指向 deploy/.env（**必须在 .gitignore 里**，仓内不得
+# 出现真实密钥）。这里只列变量名与空占位，实际值从 env_file 注入。
+#
+# 【只读边界】inbox 是 HIS 医嘱落地目录，本产品**只读不改**：compose 里以
+# :ro 挂载。out 与 state 是本产品自己写的目录。
+
+name: medication-rule-fieldmap
+
+services:
+  med-rule-fieldmap:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile
+    image: medication-rule-fieldmap:0.1.0
+    container_name: med-rule-fieldmap
+    restart: unless-stopped
+
+    # 凭据位从仓外文件注入：HIS 审方复核回写 + 企业微信推送
+    env_file:
+      - .env
+
+    # 显式声明路径类变量（env_file 里已给默认值时，这里的值优先）
+    environment:
+      MRFM_INBOX_DIR: /var/lib/medication-rule-fieldmap/inbox
+      MRFM_OUT_DIR: /var/lib/medication-rule-fieldmap/out
+      MRFM_STATE_DB: /var/lib/medication-rule-fieldmap/state/mrfm.sqlite3
+      MRFM_RULES_DIR: /opt/medication-rule-fieldmap/rules
+      MRFM_HEARTBEAT_SEC: "30"
+      PYTHONUNBUFFERED: "1"
+
+    volumes:
+      # HIS 医嘱落地目录：只读，本产品不改落地文件
+      - ${MRFM_HOST_INBOX_DIR:-/srv/his/orders}:/var/lib/medication-rule-fieldmap/inbox:ro
+      # 规则行：药事审核岗改完放这里，守护进程按 mtime 热重载
+      - ../rules:/opt/medication-rule-fieldmap/rules:ro
+      # 台账与导出产物
+      - med-fieldmap-out:/var/lib/medication-rule-fieldmap/out
+      # 状态库（SQLite/WAL）：判定行、幂等键、审计、批次进度
+      - med-fieldmap-state:/var/lib/medication-rule-fieldmap/state
+
+    # 状态库是本地 SQLite 文件，不需要对外暴露任何端口（本产品无 HTTP 服务面）
+    expose: []
+    ports: []
+
+    # 优雅退出：完成当前批次再退，不留半批状态
+    stop_grace_period: 120s
+    stop_signal: SIGTERM
+
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"
+
+    healthcheck:
+      test: ["CMD", "python", "-m", "med_rule_fieldmap.cli", "rules", "validate",
+             "--rules", "/opt/medication-rule-fieldmap/rules"]
+      interval: 60s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+
+volumes:
+  med-fieldmap-out:
+  med-fieldmap-state:

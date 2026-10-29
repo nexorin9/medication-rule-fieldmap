@@ -1,0 +1,137 @@
+# 合法性审核规则行 · 特殊药品处方量限
+#
+# 依据：《处方审核规则体系》§3「特殊药品处方量限（硬规则，可直接引擎化）」，
+# 对应《处方管理办法》（卫生部令第53号）第二十三条 / 第二十四条 / 第二十五条。
+# 阈值一律照抄该节原文，本文件不新增任何数字口径：
+#   · 门（急）诊一般患者：麻醉药品注射剂每张处方 1 次常用量；控缓释制剂不超过 7 日量；
+#     其他剂型不超过 3 日量。精一药品同麻醉药品。精二药品一般不超过 7 日常量，延长须注明理由。
+#   · 门（急）诊癌症疼痛和中、重度慢性疼痛患者：麻醉/精一注射剂不超过 3 日常量；
+#     控缓释制剂不超过 15 日量；其他剂型不超过 7 日量。
+#   · 住院患者：麻醉/精一逐日开具，1 日常用量。
+#
+# 阈值口径的**唯一真源**是 engine/limits.py 的 §3 量限矩阵：规则行用 limit_ref 声明
+# 「我落在矩阵的哪个单元」，阈值表达式必须与矩阵逐字一致（载入期校验，不一致即拒），
+# 判定时也由矩阵给结论——矩阵单元还带条件依赖（精二延长须注明理由）与口径核对
+# （日量写成 3mg 不可比），这两样靠规则行里的阈值表达式表达不了。
+# 未规则化的矩阵单元见 engine/limits.py 的 matrix_coverage()（药事审核岗按月补齐）。
+#
+# 语义：applies_when 命中即本规则适用（其中字段缺失 → 本规则不适用，不判不可判定）；
+#       required_fields 缺失 → 不可判定并点名缺哪个字段；expression 为真 → 违规。
+
+rule_id: RX-LEGAL-MA-OUT-DAYS
+layer: 合法性
+basis: 处方审核规则体系 §3 特殊药品处方量限（门（急）诊一般患者：麻醉药品注射剂每张处方 1 次常用量）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  rx_type: 门急诊一般
+  drug_category: 麻醉药品注射剂
+limit_ref: 门急诊一般/麻醉药品注射剂
+required_fields: [rx_type, drug_category, days_qty]
+expression: "days_qty > 1"
+severity: 严重不合理用药
+note: 官方案例 rx-001（3 日量）应拦截。
+---
+rule_id: RX-LEGAL-MA-INPATIENT-DAYS
+layer: 合法性
+basis: 处方审核规则体系 §3 特殊药品处方量限（住院患者：麻醉/精一逐日开具，1 日常用量）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  rx_type: 住院
+  drug_category:
+    contains: 麻醉药品
+limit_ref: 住院/麻醉药品
+required_fields: [rx_type, drug_category, days_qty]
+expression: "days_qty > 1"
+severity: 严重不合理用药
+note: 官方案例 rx-010（住院 1 日常量）应放行。住院档按药品大类计，注射剂与控缓释变体同归此单元。
+---
+rule_id: RX-LEGAL-MA-CANCER-OUT-DAYS
+layer: 合法性
+basis: 处方审核规则体系 §3 特殊药品处方量限（门（急）诊癌症疼痛和中、重度慢性疼痛患者：麻醉/精一注射剂不超过 3 日常量）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  rx_type: 门急诊癌症疼痛
+  drug_category: 麻醉药品注射剂
+limit_ref: 门急诊癌症疼痛/麻醉药品注射剂
+required_fields: [rx_type, drug_category, days_qty]
+expression: "days_qty > 3"
+severity: 严重不合理用药
+---
+rule_id: RX-LEGAL-CR-OUT-DAYS
+layer: 合法性
+basis: 处方审核规则体系 §3 特殊药品处方量限（门（急）诊一般患者：控缓释制剂不超过 7 日量）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  rx_type: 门急诊一般
+  drug_category: 麻醉药品控缓释制剂
+limit_ref: 门急诊一般/麻醉药品控缓释制剂
+required_fields: [rx_type, drug_category, days_qty]
+expression: "days_qty > 7"
+severity: 严重不合理用药
+---
+rule_id: RX-LEGAL-CR-CANCER-OUT-DAYS
+layer: 合法性
+basis: 处方审核规则体系 §3 特殊药品处方量限（门（急）诊癌症疼痛和中、重度慢性疼痛患者：控缓释制剂不超过 15 日量）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  rx_type: 门急诊癌症疼痛
+  drug_category: 麻醉药品控缓释制剂
+limit_ref: 门急诊癌症疼痛/麻醉药品控缓释制剂
+required_fields: [rx_type, drug_category, days_qty]
+expression: "days_qty > 15"
+severity: 严重不合理用药
+note: 官方案例 rx-002（15 日量）应放行。
+---
+rule_id: RX-LEGAL-SPIRIT1-OUT-DAYS
+layer: 合法性
+basis: 处方审核规则体系 §3 特殊药品处方量限（精一药品同麻醉药品，每张处方 1 次常用量）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  rx_type: 门急诊一般
+  drug_category: 第一类精神药品注射剂
+limit_ref: 门急诊一般/第一类精神药品注射剂
+required_fields: [rx_type, drug_category, days_qty]
+expression: "days_qty > 1"
+severity: 严重不合理用药
+---
+rule_id: RX-LEGAL-SPIRIT1-INPATIENT-DAYS
+layer: 合法性
+basis: 处方审核规则体系 §3 特殊药品处方量限（住院患者：麻醉/精一逐日开具，1 日常用量）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  rx_type: 住院
+  drug_category:
+    contains: 第一类精神药品
+limit_ref: 住院/第一类精神药品
+required_fields: [rx_type, drug_category, days_qty]
+expression: "days_qty > 1"
+severity: 严重不合理用药
+---
+rule_id: RX-LEGAL-SPIRIT2-OUT-DAYS
+layer: 合法性
+basis: 处方审核规则体系 §3 特殊药品处方量限（精二药品一般不超过 7 日常量，延长须注明理由）
+version: "2026.10"
+effective_from: "2026-01-01"
+effective_to: null
+applies_when:
+  rx_type: 门急诊一般
+  drug_category: 第二类精神药品
+limit_ref: 门急诊一般/第二类精神药品
+required_fields: [rx_type, drug_category, days_qty]
+expression: "days_qty > 7"
+severity: 严重不合理用药
+note: 官方案例 rx-006（7 日常量）应放行、rx-007（14 日常量且未注明理由）应拦截。延长理由由矩阵单元承担：超 7 日常量且理由未注明 → 违规；理由未落地 → 不可判定（点名 extend_reason）。

@@ -1,0 +1,212 @@
+{
+  "_meta": {
+    "名称": "第三态案例组",
+    "用途": "同一规则下『字段为空』与『字段被显式填为否』两种语义必须产出不同结论——这是三态判定存在的全部理由",
+    "来源": "本轮新建。domain/cases/prescription_review_cases.json 里只有官方案例（10 条），没有第三态案例；本文件补上这一档回归基准。",
+    "边界": "只作回归测试数据层，不是产品对接边界；正式对接口径见 spec.md §2.1（入站 26 列 / HL7 ORM^O01）与 §2.3（出站审方复核）",
+    "字段口径": "fields 为医嘱落地列取值（spec.md §2.1 的 26 列口径）；absent_columns 表示该列整列未落地（接口没回传这一列），不写表示列在",
+    "结论口径": "expect_conclusion 取判定三态中文名（合规 / 违规 / 不可判定）"
+  },
+  "groups": [
+    {
+      "group_id": "TS-SKIN-TEST",
+      "rule_id": "RX-APPR-SKIN-TEST-UNSPECIFIED",
+      "basis": "处方审核规则体系 §1 适宜性审核第 1 项（规定必须做皮试的药品，是否注明过敏试验及结果判定）",
+      "why": "「没填皮试结果」与「写明了没做皮试」是两回事：前者系统判不了（不可判定，落字段补齐顺序表），后者已知不合格（违规，可自动拦截）。混成「非空即有值」，最常见的现场错误就是把没填的皮试结果当成皮试阴性放过去。",
+      "must_differ": [
+        [
+          "TS-SKIN-TEST-EMPTY",
+          "TS-SKIN-TEST-EXPLICIT-NO"
+        ]
+      ],
+      "base_fields": {
+        "batch_no": "THIRD-STATE-BATCH",
+        "visit_no": "VISIT-TS-01",
+        "patient_ref": "PAT-TS-01",
+        "dept_code": "D-TS",
+        "dept_name": "呼吸内科门诊",
+        "prescriber_id": "PR-TS-01",
+        "prescriber_name": "医师甲",
+        "drug_code": "DC-TS-PEN",
+        "drug_name": "青霉素类注射剂",
+        "spec": "80万单位",
+        "dosage_form": "注射剂",
+        "dosage_text": "80万单位 静滴 每日一次",
+        "dosage_value": "80",
+        "dosage_unit": "万单位",
+        "route": "iv",
+        "freq": "qd",
+        "quantity": "1",
+        "rx_type": "门急诊一般",
+        "clinical_diag": "肺部感染",
+        "age_value": "58",
+        "age_unit": "岁",
+        "event_time": "2026-10-28 09:00:00"
+      },
+      "variants": [
+        {
+          "variant_id": "TS-SKIN-TEST-EMPTY",
+          "desc": "皮试结果栏位在，但医师没填",
+          "fields": {
+            "skin_test_result": ""
+          },
+          "expect_conclusion": "不可判定",
+          "expect_missing_fields": [
+            "skin_test_result"
+          ],
+          "expect_reason_contains": [
+            "skin_test_result",
+            "人工审核"
+          ]
+        },
+        {
+          "variant_id": "TS-SKIN-TEST-EXPLICIT-NO",
+          "desc": "皮试结果写明了「未注明」（显式否）",
+          "fields": {
+            "skin_test_result": "未注明"
+          },
+          "expect_conclusion": "违规",
+          "expect_missing_fields": [],
+          "expect_reason_contains": [
+            "RX-APPR-SKIN-TEST-UNSPECIFIED"
+          ]
+        },
+        {
+          "variant_id": "TS-SKIN-TEST-NEGATIVE",
+          "desc": "皮试结果「阴性」（有值）",
+          "fields": {
+            "skin_test_result": "阴性"
+          },
+          "expect_conclusion": "合规",
+          "expect_missing_fields": []
+        }
+      ]
+    },
+    {
+      "group_id": "TS-FRONT-DIAG",
+      "rule_id": "RX-NORM-FRONT-DIAG",
+      "basis": "处方审核规则体系 §1 规范性审核（前记：机构、患者身份、科别、临床诊断、日期完整清晰）",
+      "why": "前记「临床诊断」的两种「没有值」结论不同：栏位在但没填 → 处方本身不合格（违规，退回医师补写）；整列未落地 → 系统判不了（不可判定，进字段补齐顺序表交信息科补接口）。不分清，字段补齐顺序表会把「医师漏填」当成「接口没接」排到信息科的改造清单上。",
+      "must_differ": [
+        [
+          "TS-FRONT-DIAG-EMPTY",
+          "TS-FRONT-DIAG-NOT-LANDED"
+        ]
+      ],
+      "base_fields": {
+        "batch_no": "THIRD-STATE-BATCH",
+        "visit_no": "VISIT-TS-02",
+        "patient_ref": "PAT-TS-02",
+        "dept_code": "D-TS",
+        "dept_name": "心血管内科门诊",
+        "prescriber_id": "PR-TS-02",
+        "prescriber_name": "医师乙",
+        "drug_code": "DC-TS-AMLO",
+        "drug_name": "氨氯地平片",
+        "spec": "5mg",
+        "dosage_form": "片剂",
+        "dosage_text": "5mg 口服 每日一次",
+        "dosage_value": "5",
+        "dosage_unit": "mg",
+        "route": "po",
+        "freq": "qd",
+        "quantity": "7",
+        "rx_type": "门急诊一般",
+        "age_value": "61",
+        "age_unit": "岁",
+        "event_time": "2026-10-28 10:00:00"
+      },
+      "variants": [
+        {
+          "variant_id": "TS-FRONT-DIAG-EMPTY",
+          "desc": "临床诊断栏位在，但内容为空（医师没填）",
+          "fields": {
+            "clinical_diag": ""
+          },
+          "expect_conclusion": "违规",
+          "expect_missing_fields": [
+            "clinical_diag"
+          ],
+          "expect_reason_contains": [
+            "clinical_diag"
+          ]
+        },
+        {
+          "variant_id": "TS-FRONT-DIAG-NOT-LANDED",
+          "desc": "临床诊断整列未落地（接口没回传这一列）",
+          "fields": {},
+          "absent_columns": [
+            "clinical_diag"
+          ],
+          "expect_conclusion": "不可判定",
+          "expect_missing_fields": [
+            "clinical_diag"
+          ],
+          "expect_reason_contains": [
+            "clinical_diag"
+          ]
+        }
+      ]
+    },
+    {
+      "group_id": "TS-INDICATION",
+      "rule_id": "RX-APPR-INDICATION-MATCH",
+      "basis": "处方审核规则体系 §1 适宜性审核第 2 项（处方用药与临床诊断的相符性）",
+      "why": "诊断相符性本轮不做实质判定（药品说明书适应症属厂商资产，知识库未接入）。两个分支都落「不可判定」，但归因不同：字段缺 → 接口缺口（可排期补字段）；字段齐 → 知识库缺口（补接口字段也没用，得接知识库或药师判）。两个分支都绝不落「合规」——系统不能审核的部分必须人工审核。",
+      "must_differ": [],
+      "base_fields": {
+        "batch_no": "THIRD-STATE-BATCH",
+        "visit_no": "VISIT-TS-03",
+        "patient_ref": "PAT-TS-03",
+        "dept_code": "D-TS",
+        "dept_name": "心血管内科门诊",
+        "prescriber_id": "PR-TS-03",
+        "prescriber_name": "医师丙",
+        "drug_code": "DC-TS-NTG",
+        "drug_name": "硝酸甘油片含服（用于降压）",
+        "spec": "0.5mg",
+        "dosage_form": "片剂",
+        "dosage_text": "0.5mg 含服 必要时",
+        "dosage_value": "0.5",
+        "dosage_unit": "mg",
+        "route": "po",
+        "freq": "prn",
+        "quantity": "10",
+        "rx_type": "门急诊一般",
+        "clinical_diag": "高血压",
+        "age_value": "65",
+        "age_unit": "岁",
+        "event_time": "2026-10-28 11:00:00"
+      },
+      "variants": [
+        {
+          "variant_id": "TS-INDICATION-FIELD-GAP",
+          "desc": "临床诊断整列未落地（接口缺口）",
+          "fields": {},
+          "absent_columns": [
+            "clinical_diag"
+          ],
+          "expect_conclusion": "不可判定",
+          "expect_missing_fields": [
+            "clinical_diag"
+          ],
+          "expect_reason_contains": [
+            "clinical_diag",
+            "人工审核"
+          ]
+        },
+        {
+          "variant_id": "TS-INDICATION-KNOWLEDGE-GAP",
+          "desc": "字段齐备，但药品说明书适应症未接入（知识库缺口）",
+          "fields": {},
+          "expect_conclusion": "不可判定",
+          "expect_missing_fields": [],
+          "expect_reason_contains": [
+            "人工复核",
+            "药品说明书"
+          ]
+        }
+      ]
+    }
+  ]
+}

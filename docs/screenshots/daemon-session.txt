@@ -1,0 +1,37 @@
+[1m[38;2;213;217;224m合理用药审方字段对照系统 · 规则 19 条 · 入站 /private/tmp/mrfm-demo/inbox · 回写 http://127.0.0.1:52184/api/v1/prescription/review[0m
+[38;2;213;217;224m  产物 /private/tmp/mrfm-demo/out · 状态库 /private/tmp/mrfm-demo/state/state.sqlite3 · 心跳 3s · 推送 已配置[0m
+[38;2;139;148;158m[alive] 规则 19 条 · 已处理 0 批 · 待判定 0 条[0m
+[38;2;213;217;224m[watch] 已启用 watchdog 文件系统事件监听[0m
+[38;2;139;148;158m[alive] 规则 19 条 · 已处理 0 批 · 待判定 0 条[0m
+[1m[38;2;213;217;224m批次 DEMO-BATCH-001（来源 orders_20261029_0900.csv）：收到 26 行 · 命中规则 192 条 · 合规 170 · 违规 11 · 不可判定 11 · 判定台账 → /private/tmp/mrfm-demo/out/judgement_ledger.csv[0m
+[38;2;213;217;224m  逐行判定：以下 22 条需要人工处理（合规 170 条计入判定台账）[0m
+[38;2;213;217;224m  判定 RX-0024 · RX-LEGAL-CR-OUT-DAYS · 不可判定 · 缺少 drug_category[0m
+[38;2;213;217;224m  判定 RX-0007 · RX-LEGAL-MA-INPATIENT-DAYS · 不可判定 · 缺少 rx_type[0m
+[38;2;213;217;224m  判定 RX-0017 · RX-LEGAL-SPIRIT1-OUT-DAYS · 违规 · 开具日量 2 超过该档上限「1 次常用量」。[0m
+[38;2;213;217;224m  判定 RX-0003 · RX-NORM-FRONT-DIAG · 违规 · 前记「临床诊断」缺项（字段 clinical_diag 栏位在但内容为空）。栏位已落地而内容为空，属处方本身不合格，须退回医师补写[0m
+[38;2;213;217;224m  判定 RX-0013 · RX-LEGAL-MA-INPATIENT-DAYS · 违规 · 开具日量 2 超过该档上限「1 日常量」。[0m
+[38;2;213;217;224m  判定 RX-0015 · RX-LEGAL-SPIRIT1-INPATIENT-DAYS · 违规 · 开具日量 3 超过该档上限「1 日常量」。[0m
+[38;2;213;217;224m  判定 RX-0009 · RX-LEGAL-CR-OUT-DAYS · 违规 · 开具日量 10 超过该档上限「7 日量」。[0m
+[38;2;213;217;224m  判定 RX-0020 · RX-APPR-SKIN-TEST-UNSPECIFIED · 不可判定 · 缺少 skin_test_result[0m
+[38;2;213;217;224m  判定 RX-0026 · RX-NORM-USAGE-VAGUE · 不可判定 · 缺少 dosage_text[0m
+[38;2;213;217;224m  判定 RX-0011 · RX-LEGAL-SPIRIT2-OUT-DAYS · 违规 · 开具日量 14 超过该档上限「7 日量」，且延长理由未注明（落地值「未注明」）。[0m
+[38;2;213;217;224m  判定 RX-0019 · RX-LEGAL-MA-CANCER-OUT-DAYS · 违规 · 开具日量 5 超过该档上限「3 日常量」。[0m
+[38;2;213;217;224m  判定 RX-0005 · RX-APPR-DOSE-NONPOSITIVE · 违规 · 判定条件「dosage_value <= 0」命中。[0m
+[38;2;213;217;224m  判定 RX-0021 · RX-APPR-SKIN-TEST-UNSPECIFIED · 违规 · 皮试结果字段 skin_test_result 落地为「未注明」（显式否定值：写明了没做皮试，不是字段没落地）[0m
+[38;2;213;217;224m  判定 RX-0002 · RX-LEGAL-MA-OUT-DAYS · 违规 · 开具日量 3 超过该档上限「1 次常用量」。[0m
+[38;2;213;217;224m  判定 RX-0024 · RX-LEGAL-MA-OUT-DAYS · 不可判定 · 缺少 drug_category[0m
+[38;2;213;217;224m  判定 RX-0007 · RX-LEGAL-MA-CANCER-OUT-DAYS · 不可判定 · 缺少 rx_type[0m
+[38;2;213;217;224m  判定 RX-0007 · RX-LEGAL-MA-OUT-DAYS · 不可判定 · 缺少 rx_type[0m
+[38;2;213;217;224m  判定 RX-0020 · RX-APPR-SKIN-TEST-POSITIVE · 不可判定 · 缺少 skin_test_result[0m
+[38;2;213;217;224m  判定 RX-0024 · RX-LEGAL-SPIRIT2-OUT-DAYS · 不可判定 · 缺少 drug_category[0m
+[38;2;213;217;224m  判定 RX-0004 · RX-NORM-USAGE-VAGUE · 违规 · 用法用量命中含糊字句「遵医嘱」（出现在字段 dosage_text）。须退回医师按具体用法用量重新开具。[0m
+[38;2;213;217;224m  判定 RX-0006 · RX-LEGAL-MA-OUT-DAYS · 不可判定 · 缺少 days_qty[0m
+[38;2;213;217;224m  判定 RX-0024 · RX-LEGAL-SPIRIT1-OUT-DAYS · 不可判定 · 缺少 drug_category[0m
+[38;2;213;217;224m  字段缺口台账 → /private/tmp/mrfm-demo/out/undeterminable_ledger.csv（11 组）· 字段补齐顺序表 → /private/tmp/mrfm-demo/out/field_gap_priority.csv（5 个字段）[0m
+[38;2;213;217;224m  推送 企业微信 · 已送达 · HTTP 200 · 卡片 736 字 · 尝试 1 次[0m
+[38;2;57;197;207m回写：发出 0 条 · 失败 0 条（只发药师已确认的结论）[0m
+[38;2;139;148;158m[audit] 批次 DEMO-BATCH-001 · 判定 192 条 · 事件指纹 be49b10881c3[0m
+[38;2;213;217;224m  运行摘要：批次 DEMO-BATCH-001 · 收到 26 行 · 合规 170 · 违规 11 · 不可判定 11 · 回写 0 条 · 耗时 0.08s[0m
+[38;2;139;148;158m[alive] 规则 19 条 · 已处理 1 批 · 待判定 192 条[0m
+[38;2;139;148;158m[alive] 规则 19 条 · 已处理 1 批 · 待判定 192 条[0m
+[38;2;139;148;158m[alive] 规则 19 条 · 已处理 1 批 · 待判定 192 条[0m

@@ -1,0 +1,8 @@
+batch_no,order_no,prescription_no,visit_no,patient_ref,dept_code,dept_name,prescriber_id,prescriber_name,drug_code,drug_name,spec,dosage_form,dosage_text,dosage_value,dosage_unit,route,freq,quantity,rx_type,drug_category,days_qty,extend_reason,skin_test_result,clinical_diag,age_value,age_unit,event_time
+CHILD-BATCH-001,ORD-C001,RX-C001,VISIT-C001,PT-C001,D900,儿科门诊,PR-900,医师乙,DC-900,阿莫西林胶囊,0.25g:12粒,胶囊,0.25g 口服 每日3次,0.25,g,口服,每日3次,12,门急诊一般,普通药品,3,,,小儿肺炎,,,2026-10-28 09:05:00
+CHILD-BATCH-001,ORD-C002,RX-C002,VISIT-C002,PT-C002,D900,儿科门诊,PR-900,医师乙,DC-901,布洛芬混悬液,100ml:20ml,口服混悬液,5ml 口服 必要时,5,ml,口服,必要时,1,门急诊一般,普通药品,1,,,小儿发热,0,岁,2026-10-28 09:10:00
+CHILD-BATCH-001,ORD-C003,RX-C003,VISIT-C003,PT-C003,D900,儿科门诊,PR-900,医师乙,DC-902,枯草杆菌二联活菌颗粒,0.2g:10袋,颗粒,0.2g 冲服 每日2次,0.2,g,口服,每日2次,10,门急诊一般,普通药品,5,,,小儿腹泻,6,月,2026-10-28 09:15:00
+CHILD-BATCH-001,ORD-C004,RX-C004,VISIT-C004,PT-C004,D900,儿科门诊,PR-900,医师乙,DC-903,维生素D滴剂,400IU:30粒,滴剂,1粒 口服 每日1次,1,粒,口服,每日1次,30,门急诊一般,普通药品,30,,,佝偻病,3,岁,2026-10-28 09:20:00
+CHILD-BATCH-001,ORD-C005,RX-C005,VISIT-C005,PT-C005,D900,儿科门诊,PR-900,医师乙,DC-904,头孢克肟颗粒,50mg:12袋,颗粒,50mg 口服 每日2次,50,mg,口服,每日2次,12,门急诊一般,普通药品,2,,,小儿咽炎,3,,2026-10-28 09:25:00
+CHILD-BATCH-001,ORD-C006,RX-C006,VISIT-C006,PT-C006,D900,儿科门诊,PR-900,医师乙,DC-905,蒙脱石散,3g:10袋,散剂,3g 冲服 每日3次,3,g,口服,每日3次,10,门急诊一般,普通药品,3,,,小儿腹泻,0,月,2026-10-28 09:30:00
+CHILD-BATCH-001,ORD-C007,RX-C007,VISIT-C007,PT-C007,D101,呼吸内科门诊,PR-001,医师甲,DC-001,盐酸吗啡注射液,10mg:1ml,注射剂,5mg 静滴 每日1次,5,mg,静脉滴注,每日1次,1,门急诊一般,麻醉药品注射剂,1,,,高血压,,,2026-10-28 09:35:00

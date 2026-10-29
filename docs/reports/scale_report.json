@@ -1,0 +1,87 @@
+{
+  "report": "scale_regression",
+  "dataset": {
+    "source": "scripts/gen_synthetic_orders.py（确定性种子合成）",
+    "usage_scope": "测试数据层（不是真实院内医嘱，不是产品对接边界）",
+    "seed": 20261028,
+    "rows": 2000,
+    "batch_no": "SYN-BATCH-001",
+    "design_distribution": {
+      "合规": 1200,
+      "违规": 500,
+      "不可判定": 300
+    }
+  },
+  "rules": {
+    "dir": "rules/sample",
+    "effective_rule_count": 19,
+    "rule_ids": [
+      "RX-APPR-DOSE-NONPOSITIVE",
+      "RX-APPR-DUPLICATE-ADMINISTRATION",
+      "RX-APPR-INDICATION-MATCH",
+      "RX-APPR-SKIN-TEST-POSITIVE",
+      "RX-APPR-SKIN-TEST-UNSPECIFIED",
+      "RX-APPR-SUPERNORMAL-PRESCRIBING-RIGHT",
+      "RX-LEGAL-CR-CANCER-OUT-DAYS",
+      "RX-LEGAL-CR-OUT-DAYS",
+      "RX-LEGAL-MA-CANCER-OUT-DAYS",
+      "RX-LEGAL-MA-INPATIENT-DAYS",
+      "RX-LEGAL-MA-OUT-DAYS",
+      "RX-LEGAL-SPIRIT1-INPATIENT-DAYS",
+      "RX-LEGAL-SPIRIT1-OUT-DAYS",
+      "RX-LEGAL-SPIRIT2-OUT-DAYS",
+      "RX-NORM-BACK-SIGNATURE",
+      "RX-NORM-CHILD-AGE",
+      "RX-NORM-FRONT-DIAG",
+      "RX-NORM-FRONT-HEADER",
+      "RX-NORM-USAGE-VAGUE"
+    ]
+  },
+  "deterministic": {
+    "prescription_rows": 2000,
+    "judgement_rows": 13804,
+    "conclusion_distribution": {
+      "合规": 12443,
+      "违规": 507,
+      "不可判定": 854
+    },
+    "prescription_verdict_distribution": {
+      "不可判定": 300,
+      "合规": 1200,
+      "违规": 500
+    },
+    "candidate_rules_per_prescription": {
+      "6": 950,
+      "7": 589,
+      "8": 267,
+      "9": 101,
+      "10": 87,
+      "11": 6
+    },
+    "distinct_expressions": 15
+  },
+  "measured": {
+    "read_sec": 0.0103,
+    "judge_sec": 0.5709,
+    "rows_per_sec": 3503.3,
+    "expression_cache": {
+      "hits": 2301,
+      "misses": 15,
+      "parses": 15,
+      "evictions": 0,
+      "invalidations": 0,
+      "size": 15,
+      "max_size": 512,
+      "hit_rate": 0.993523
+    }
+  },
+  "thresholds": {
+    "cache_hit_rate_min": 0.9,
+    "rows_per_sec_min": 200.0
+  },
+  "verdict": {
+    "cache_hit_rate_ok": true,
+    "throughput_ok": true,
+    "rows_ok": true
+  }
+}

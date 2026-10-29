@@ -1,0 +1,184 @@
+{
+  "report": "baseline_compare",
+  "dataset": {
+    "source": "scripts/gen_synthetic_orders.py（确定性种子合成）",
+    "usage_scope": "测试数据层（不是真实院内医嘱，不是产品对接边界）",
+    "seed": 20261028,
+    "rows": 2000
+  },
+  "rules": {
+    "dir": "rules/sample",
+    "effective_rule_count": 19
+  },
+  "baseline_definition": "同链去三态：同一套规则、同一份数据、同一条判定链，只把结论空间从三态压成二元（判不了的规则要么不出结论、要么判违规）。另附独立二元实现（只做表达式规则），显示真实基础实现的覆盖面差距。",
+  "metric_definition": {
+    "recall_rate": "不可判定召回率 = 判成不可判定的真不可判定处方数 ÷ 真不可判定处方总数",
+    "false_violation_rate": "真不可判定却被判违规的比例（缺字段被当成不合理硬拦）",
+    "silent_pass_rate": "真不可判定却被判合规的比例（缺字段被静默放行，台账看着正常其实没审）",
+    "silent_drop_rate": "真不可判定却一条结论都没有的比例（整条处方在台账上消失）",
+    "verdict_accuracy": "逐处方结论与基准标签一致的比例（全部 2000 行）"
+  },
+  "caveat": "规模集是确定性合成的，只作测试数据层；基准标签来自合成器的**设计结论**，不是外部权威标注集——所以这份对比度量的是「同一条判定链在规模下是否稳定、三态结论空间相对二元结论空间带来多少可核对的差异」，不等于对真实院内医嘱的准确率。独立于本轮合成集的官方口径正确性证据见 10 条官方案例回归（tests/test_baseline_cases.py）。",
+  "implementations": {
+    "tristate": {
+      "label": "三态判定（本轮产品）",
+      "description": "结论空间 = 合规 / 违规 / 不可判定；缺字段落第三态并点名。",
+      "metrics": {
+        "labels_total": 2000,
+        "label_distribution": {
+          "不可判定": 300,
+          "合规": 1200,
+          "违规": 500
+        },
+        "undeterminable_total": 300,
+        "recalled": 300,
+        "recall_rate": 1.0,
+        "false_violation": 0,
+        "false_violation_rate": 0.0,
+        "silent_pass": 0,
+        "silent_pass_rate": 0.0,
+        "silent_drop": 0,
+        "silent_drop_rate": 0.0,
+        "verdict_accuracy": 1.0,
+        "confusion": {
+          "不可判定→不可判定": 300,
+          "合规→合规": 1200,
+          "违规→违规": 500
+        }
+      }
+    },
+    "binary_skip": {
+      "label": "二元基础实现 · 字段缺失即跳过",
+      "description": "同链去三态：判不了的规则不出结论（台账上整条处方消失）。",
+      "metrics": {
+        "labels_total": 2000,
+        "label_distribution": {
+          "不可判定": 300,
+          "合规": 1200,
+          "违规": 500
+        },
+        "undeterminable_total": 300,
+        "recalled": 0,
+        "recall_rate": 0.0,
+        "false_violation": 0,
+        "false_violation_rate": 0.0,
+        "silent_pass": 300,
+        "silent_pass_rate": 1.0,
+        "silent_drop": 0,
+        "silent_drop_rate": 0.0,
+        "verdict_accuracy": 0.85,
+        "confusion": {
+          "不可判定→合规": 300,
+          "合规→合规": 1200,
+          "违规→违规": 500
+        }
+      }
+    },
+    "binary_violation": {
+      "label": "二元基础实现 · 字段缺失即判违规",
+      "description": "同链去三态：判不了的规则一律判违规（缺字段被当成不合理硬拦）。",
+      "metrics": {
+        "labels_total": 2000,
+        "label_distribution": {
+          "不可判定": 300,
+          "合规": 1200,
+          "违规": 500
+        },
+        "undeterminable_total": 300,
+        "recalled": 0,
+        "recall_rate": 0.0,
+        "false_violation": 300,
+        "false_violation_rate": 1.0,
+        "silent_pass": 0,
+        "silent_pass_rate": 0.0,
+        "silent_drop": 0,
+        "silent_drop_rate": 0.0,
+        "verdict_accuracy": 0.85,
+        "confusion": {
+          "不可判定→违规": 300,
+          "合规→合规": 1200,
+          "违规→违规": 500
+        }
+      }
+    },
+    "binary_standalone_skip": {
+      "label": "独立二元实现 · 字段缺失即跳过",
+      "description": "只实现表达式规则的最小二元审方：专用规则族与量限矩阵一概不实现，判不了（口径不可比等）只能静默放行。",
+      "counters": {
+        "candidate_rules": 15556,
+        "skipped_special_family": 10702,
+        "missing_field_hits": 2854
+      },
+      "metrics": {
+        "labels_total": 2000,
+        "label_distribution": {
+          "不可判定": 300,
+          "合规": 1200,
+          "违规": 500
+        },
+        "undeterminable_total": 300,
+        "recalled": 0,
+        "recall_rate": 0.0,
+        "false_violation": 0,
+        "false_violation_rate": 0.0,
+        "silent_pass": 300,
+        "silent_pass_rate": 1.0,
+        "silent_drop": 0,
+        "silent_drop_rate": 0.0,
+        "verdict_accuracy": 0.6,
+        "confusion": {
+          "不可判定→合规": 300,
+          "合规→合规": 1200,
+          "违规→合规": 500
+        }
+      }
+    },
+    "binary_standalone_violation": {
+      "label": "独立二元实现 · 字段缺失即判违规",
+      "description": "只实现表达式规则的最小二元审方：专用规则族与量限矩阵一概不实现，判不了（口径不可比等）只能静默放行。",
+      "counters": {
+        "candidate_rules": 15556,
+        "skipped_special_family": 10702,
+        "missing_field_hits": 2854
+      },
+      "metrics": {
+        "labels_total": 2000,
+        "label_distribution": {
+          "不可判定": 300,
+          "合规": 1200,
+          "违规": 500
+        },
+        "undeterminable_total": 300,
+        "recalled": 0,
+        "recall_rate": 0.0,
+        "false_violation": 300,
+        "false_violation_rate": 1.0,
+        "silent_pass": 0,
+        "silent_pass_rate": 0.0,
+        "silent_drop": 0,
+        "silent_drop_rate": 0.0,
+        "verdict_accuracy": 0.22,
+        "confusion": {
+          "不可判定→违规": 300,
+          "合规→违规": 1200,
+          "违规→合规": 60,
+          "违规→违规": 440
+        }
+      }
+    }
+  },
+  "gain": {
+    "undeterminable_recall_rate": {
+      "tristate": 1.0,
+      "binary_skip": 0.0,
+      "binary_violation": 0.0
+    },
+    "recall_gain_vs_binary_skip": 1.0,
+    "recall_gain_vs_binary_violation": 1.0,
+    "false_violation_avoided_vs_binary_violation": 300,
+    "silent_pass_avoided_vs_binary_skip": 300,
+    "silent_drop_avoided_vs_binary_skip": 0,
+    "accuracy_gain_vs_binary_skip": 0.15,
+    "accuracy_gain_vs_binary_violation": 0.15
+  }
+}

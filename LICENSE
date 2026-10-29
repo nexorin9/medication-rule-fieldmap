@@ -1,0 +1,41 @@
+MIT License
+
+Copyright (c) 2026 medication-rule-fieldmap contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+说明（中文）：
+
+本项目采用 MIT 许可证。
+
+* `tests/data/` 下为本仓自产的**脱敏合成医嘱样例**（CSV / HL7 v2 ORM^O01）与
+  官方案例回归集，处方号、住院号、医师标识均为占位类目，不含任何真实患者
+  信息，不受第三方许可约束。
+* `rules/sample/` 下为可运行的示例审方规则行，阈值与依据出处取自
+  《处方审核规则体系》公开条文，条文本身不受本仓许可约束。
+* `out/_scale_dataset/`（规模验收用大数据集）**不随仓库分发**，需由
+  `python scripts/gen_synthetic_orders.py --out out/_scale_dataset` 按固定
+  随机种子重新生成，其许可条款与仓库内其他文件一致。
+* `data/mimic_demo/`（MIMIC-IV Demo v2.2 对照子集）**不随仓库分发**，需由
+  `python scripts/fetch_mimic_demo.py` 自行下载。该数据集属 PhysioNet
+  Credentialed Access，须接受 PhysioNet 数据使用协议；本仓**不转发、不再
+  分发**其内容，只保留下载脚本与结构快照
+  （`tests/data/mimic_demo_snapshot/`）。
